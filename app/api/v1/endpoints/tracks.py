@@ -41,8 +41,8 @@ def upload_track(
     if file.content_type not in ["audio/mpeg", "audio/wav", "audio/mp3"]:
         raise HTTPException(status_code=400, detail="Invalid file type. Only MP3/WAV allowed.")
     
-    # Check size - crude check by reading into memory (limit 10MB as per req)
-    MAX_SIZE = 10 * 1024 * 1024
+    # Check size - crude check by reading into memory (limit 50MB as per req)
+    MAX_SIZE = 50 * 1024 * 1024
     content = file.file.read()
     if len(content) > MAX_SIZE:
         raise HTTPException(status_code=400, detail="File too large")
