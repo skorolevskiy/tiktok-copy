@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-export default function Modal({ isOpen, onClose, title, children, footer, large }) {
+export default function Modal({ isOpen = true, onClose, title, children, footer, large }) {
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === 'Escape') onClose();
