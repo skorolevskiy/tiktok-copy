@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { ToastProvider } from './hooks/useToast';
 import Sidebar from './components/Sidebar';
-import VideosPage from './components/VideosPage';
+import ReferencesPage from './components/ReferencesPage';
+import AvatarsPage from './components/AvatarsPage';
+import MotionGenerationPage from './components/MotionGenerationPage';
 import TracksPage from './components/TracksPage';
 import MontagePage from './components/MontagePage';
 
 export default function App() {
-  const [activeSection, setActiveSection] = useState('videos');
+  const [activeSection, setActiveSection] = useState('avatars');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -18,7 +20,9 @@ export default function App() {
         onToggle={setSidebarOpen}
       />
       <main className="content">
-        {activeSection === 'videos' && <VideosPage />}
+        {activeSection === 'avatars' && <AvatarsPage />}
+        {activeSection === 'references' && <ReferencesPage />}
+        {activeSection === 'motions' && <MotionGenerationPage />}
         {activeSection === 'tracks' && <TracksPage />}
         {activeSection === 'montage' && <MontagePage />}
       </main>

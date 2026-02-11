@@ -1,6 +1,8 @@
 export default function Sidebar({ active, onNavigate, isOpen, onToggle }) {
   const links = [
-    { id: 'videos', icon: 'fa-video', label: 'Видео' },
+    { id: 'avatars', icon: 'fa-user-circle', label: 'Аватары' },
+    { id: 'references', icon: 'fa-film', label: 'Референсы' },
+    { id: 'motions', icon: 'fa-running', label: 'Генерация' },
     { id: 'tracks', icon: 'fa-music', label: 'Треки' },
     { id: 'montage', icon: 'fa-wand-magic-sparkles', label: 'Монтаж' },
   ];

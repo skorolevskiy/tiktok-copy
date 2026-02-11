@@ -10,10 +10,13 @@ export default function MontagePage() {
   const [montages, setMontages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [createModal, setCreateModal] = useState(false);
-  const [videos, setVideos] = useState([]);
+  // Renamed from videos -> motions
+  const [motions, setMotions] = useState([]); 
   const [tracks, setTracks] = useState([]);
-  const [selectedVideo, setSelectedVideo] = useState('');
+  
+  const [selectedMotion, setSelectedMotion] = useState('');
   const [selectedTrack, setSelectedTrack] = useState('');
+  
   const [creating, setCreating] = useState(false);
   const [player, setPlayer] = useState({ open: false, url: '', title: '' });
   const [step, setStep] = useState(1);
@@ -45,15 +48,17 @@ export default function MontagePage() {
 
   const openCreateModal = async () => {
     try {
-      const [vData, tData] = await Promise.all([
-        api.fetchVideos(),
+      // Changed fetchVideos to fetchMotions
+      const [mData, tData] = await Promise.all([
+        api.fetchMotions(),
         api.fetchTracks(),
       ]);
-      setVideos(
-        vData.filter((v) => ['downloaded', 'completed'].includes(v.status))
+      // Filter for successful motions
+      setMotions(
+        mData.filter((m) => ['success', 'completed'].includes(m.status))
       );
       setTracks(tData);
-      setSelectedVideo('');
+      setSelectedMotion('');
       setSelectedTrack('');
       setStep(1);
       setCreateModal(true);
@@ -63,10 +68,10 @@ export default function MontagePage() {
   };
 
   const handleCreate = async () => {
-    if (!selectedVideo || !selectedTrack) return;
+    if (!selectedMotion || !selectedTrack) return;
     setCreating(true);
     try {
-      await api.createMontage(selectedVideo, selectedTrack);
+      await api.createMontage(selectedMotion, selectedTrack);
       showToast('Монтаж создан! Обработка началась.', 'success');
       setCreateModal(false);
       loadMontages();
@@ -79,12 +84,12 @@ export default function MontagePage() {
 
   const stepTitle =
     step === 1
-      ? 'Шаг 1 — Выберите видео'
+      ? 'Шаг 1 — Выберите сгенерированное видео'
       : step === 2
         ? 'Шаг 2 — Выберите трек'
         : 'Подтверждение';
 
-  const selectedVideoObj = videos.find((v) => v.id === selectedVideo);
+  const selectedMotionObj = motions.find((m) => m.id === selectedMotion);
   const selectedTrackObj = tracks.find((t) => t.id === selectedTrack);
 
   return (
@@ -185,7 +190,7 @@ export default function MontagePage() {
               {step === 1 && (
                 <button
                   className="btn btn-primary"
-                  disabled={!selectedVideo}
+                  disabled={!selectedMotion}
                   onClick={() => setStep(2)}
                 >
                   Далее <i className="fas fa-arrow-right"></i>
@@ -221,41 +226,43 @@ export default function MontagePage() {
           </div>
         }
       >
-        {/* Step 1: Pick Video */}
+        {/* Step 1: Pick Motion (formerly Video) */}
         {step === 1 && (
           <div className="picker-list">
-            {videos.length === 0 ? (
+            {motions.length === 0 ? (
               <div className="picker-empty">
                 <i className="fas fa-video-slash"></i>
-                <p>Нет доступных видео для монтажа</p>
+                <p>Нет доступных генераций для монтажа</p>
               </div>
             ) : (
-              videos.map((v) => (
+              motions.map((m) => (
                 <div
-                  key={v.id}
-                  className={`picker-item ${selectedVideo === v.id ? 'selected' : ''}`}
-                  onClick={() => setSelectedVideo(v.id)}
+                  key={m.id}
+                  className={`picker-item ${selectedMotion === m.id ? 'selected' : ''}`}
+                  onClick={() => setSelectedMotion(m.id)}
                 >
                   <div className="picker-item-preview">
-                    {v.file_url ? (
-                      <video src={v.file_url} preload="metadata" muted />
+                    {m.motion_thumbnail_url ? (
+                        <img src={m.motion_thumbnail_url} alt="motion" style={{width:'100%', height:'100%', objectFit:'cover'}}/>
+                    ) : m.motion_video_url ? (
+                      <video src={m.motion_video_url} preload="metadata" muted />
                     ) : (
                       <i className="fas fa-video"></i>
                     )}
                   </div>
                   <div className="picker-item-info">
                     <div className="picker-item-title">
-                      {truncateUrl(v.original_url, 55)}
+                      Motion #{shortId(m.id)}
                     </div>
                     <div className="picker-item-meta">
-                      <StatusBadge status={v.status} />
+                      <StatusBadge status={m.status} />
                       <span className="picker-item-id">
-                        <i className="fas fa-fingerprint"></i> {shortId(v.id)}
+                        <i className="fas fa-fingerprint"></i> {shortId(m.id)}
                       </span>
                     </div>
                   </div>
                   <div className="picker-item-check">
-                    {selectedVideo === v.id && (
+                    {selectedMotion === m.id && (
                       <i className="fas fa-check-circle"></i>
                     )}
                   </div>
@@ -317,13 +324,13 @@ export default function MontagePage() {
           <div className="picker-confirm">
             <div className="picker-confirm-row">
               <div className="picker-confirm-label">
-                <i className="fas fa-video"></i> Видео
+                <i className="fas fa-video"></i> Motion
               </div>
               <div className="picker-confirm-card">
-                {selectedVideoObj?.file_url ? (
+                {selectedMotionObj?.motion_video_url ? (
                   <div className="picker-confirm-thumb">
                     <video
-                      src={selectedVideoObj.file_url}
+                      src={selectedMotionObj.motion_video_url}
                       preload="metadata"
                       muted
                     />
@@ -335,11 +342,11 @@ export default function MontagePage() {
                 )}
                 <div className="picker-confirm-info">
                   <div className="picker-item-title">
-                    {truncateUrl(selectedVideoObj?.original_url || '', 50)}
+                     Motion #{shortId(selectedMotionObj?.id)}
                   </div>
                   <span className="picker-item-id">
                     <i className="fas fa-fingerprint"></i>{' '}
-                    {shortId(selectedVideoObj?.id)}
+                    {shortId(selectedMotionObj?.id)}
                   </span>
                 </div>
               </div>

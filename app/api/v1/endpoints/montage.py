@@ -4,7 +4,7 @@ from typing import List
 import uuid
 
 from app.api import deps
-from app.models.video import Video
+from app.models.motion_cache import MotionCache
 from app.models.edit import Edit, EditStatus
 from app.models.track import Track
 from app.schemas.edit import EditRequest, EditResponse
@@ -21,20 +21,21 @@ def create_montage(
     request: Request,
     db: Session = Depends(deps.get_db),
 ):
-    """Create a new montage: overlay a track onto a video."""
-    vid = db.query(Video).filter(Video.id == payload.video_id).first()
-    if not vid:
-        raise HTTPException(status_code=404, detail="Video not found")
+    """Create a new montage: overlay a track onto a generated motion video."""
+    motion = db.query(MotionCache).filter(MotionCache.id == payload.motion_id).first()
+    if not motion:
+        raise HTTPException(status_code=404, detail="Motion video not found")
 
-    if vid.status not in ("downloaded", "completed"):
-        raise HTTPException(status_code=400, detail="Video is not ready for editing")
+    # Check if motion is successful/ready?
+    if motion.status != "success": # Assuming status for success is 'success' in MotionCache
+         raise HTTPException(status_code=400, detail="Motion video is not ready for editing")
 
     track = db.query(Track).filter(Track.id == payload.track_id).first()
     if not track:
         raise HTTPException(status_code=404, detail="Track not found")
 
     edit_job = Edit(
-        video_id=vid.id,
+        motion_id=motion.id,
         track_id=track.id,
         status=EditStatus.pending,
     )
@@ -46,7 +47,7 @@ def create_montage(
 
     return EditResponse(
         id=edit_job.id,
-        video_id=vid.id,
+        motion_id=motion.id,
         track_id=track.id,
         status=edit_job.status.value,
         file_url=None,
