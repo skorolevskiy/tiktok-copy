@@ -73,9 +73,9 @@ export default function AvatarsPage() {
       ) : (
         <div className="card-grid">
           {avatars.map((avatar) => (
-            <div key={avatar.id} className="card">
+            <div key={avatar.id} className="card video-card">
               <div className="card-preview">
-                <img src={avatar.image_url} alt="Avatar" style={{ objectFit: 'contain' }} />
+                <img src={avatar.image_url} alt="Avatar" />
               </div>
               <div className="card-body">
                  <div className="card-actions" style={{ justifyContent: 'flex-end' }}>

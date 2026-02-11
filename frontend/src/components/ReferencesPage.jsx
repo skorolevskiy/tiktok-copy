@@ -91,7 +91,7 @@ export default function ReferencesPage() {
       ) : (
         <div className="card-grid">
           {references.map((item) => (
-            <div key={item.id} className="card">
+            <div key={item.id} className="card video-card">
               <div
                 className="card-preview"
                 onClick={() =>

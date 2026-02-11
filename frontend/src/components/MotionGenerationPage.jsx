@@ -108,7 +108,7 @@ export default function MotionGenerationPage() {
         ) : (
             <div className="card-grid">
                 {motions.map(item => (
-                    <div key={item.id} className="card">
+                    <div key={item.id} className="card video-card">
                         <div className="card-preview"
                             onClick={() => item.motion_video_url && setPlayer({
                                 open: true, 

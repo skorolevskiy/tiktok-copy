@@ -309,6 +309,7 @@ body {
   overflow: hidden;
 }
 
+.card-preview img,
 .card-preview video {
   width: 100%;
   height: 100%;
