@@ -203,6 +203,17 @@ def process_edit_task(edit_id: str):
                 out_name = f"edit_{edit.id}.mp4"
                 minio_client.upload_file(settings.MINIO_BUCKET_PROCESSED, out_name, output_local, "video/mp4")
                 edit.processed_file_path = out_name
+                
+                # Generate and upload thumbnail
+                thumb_path = generate_thumbnail(output_local)
+                if thumb_path:
+                    thumb_name = f"thumb_{edit.id}.jpg"
+                    minio_client.upload_file(settings.MINIO_BUCKET_PROCESSED, thumb_name, thumb_path, "image/jpeg")
+                    edit.thumbnail_path = thumb_name
+                    try:
+                        os.remove(thumb_path)
+                    except: pass
+                
                 edit.status = EditStatus.completed
                 db.commit()
 

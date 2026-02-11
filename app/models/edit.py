@@ -17,6 +17,7 @@ class Edit(Base):
     video_id = Column(UUID(as_uuid=True), ForeignKey('videos.id'), nullable=True)
     track_id = Column(UUID(as_uuid=True), ForeignKey('tracks.id'), nullable=False)
     processed_file_path = Column(String, nullable=True)
+    thumbnail_path = Column(String, nullable=True)
     edit_task_id = Column(UUID(as_uuid=True), nullable=True)
     status = Column(SQLEnum(EditStatus, name="edit_status"), default=EditStatus.pending)
     

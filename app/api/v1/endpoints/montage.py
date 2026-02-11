@@ -70,6 +70,7 @@ def create_montage(
         track_id=track.id,
         status=edit_job.status.value,
         file_url=None,
+        thumbnail_url=None,
     )
 
 
@@ -98,6 +99,9 @@ def list_all_montages(
             file_url=get_file_url(request, settings.MINIO_BUCKET_PROCESSED, e.processed_file_path)
             if e.processed_file_path
             else None,
+            thumbnail_url=get_file_url(request, settings.MINIO_BUCKET_PROCESSED, e.thumbnail_path)
+            if e.thumbnail_path
+            else None,
         )
         for e in edits
     ]
@@ -120,6 +124,9 @@ def get_montage(
         status=e.status.value if hasattr(e.status, "value") else e.status,
         file_url=get_file_url(request, settings.MINIO_BUCKET_PROCESSED, e.processed_file_path)
         if e.processed_file_path
+        else None,
+        thumbnail_url=get_file_url(request, settings.MINIO_BUCKET_PROCESSED, e.thumbnail_path)
+        if e.thumbnail_path
         else None,
     )
 

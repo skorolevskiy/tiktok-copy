@@ -104,10 +104,12 @@ export default function ReferencesPage() {
                 }
               >
                 {item.thumbnail_url ? (
-                  <img src={item.thumbnail_url} alt="Thumbnail" />
+                   <img src={item.thumbnail_url} className="w-full h-full object-cover" alt="Thumbnail" />
+                ) : item.file_url ? (
+                   <video src={item.file_url} className="w-full h-full object-cover" preload="metadata" muted />
                 ) : (
-                  <div className="placeholder">
-                    <i className="fas fa-film"></i>
+                  <div className="placeholder w-full h-full flex items-center justify-center bg-dark-lighter">
+                    <i className="fas fa-film text-2xl opacity-50"></i>
                   </div>
                 )}
                 {item.file_url && (

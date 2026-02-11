@@ -14,6 +14,7 @@ class EditResponse(BaseModel):
     track_id: UUID
     status: str
     file_url: Optional[str] = None
+    thumbnail_url: Optional[str] = None
 
     class Config:
         from_attributes = True

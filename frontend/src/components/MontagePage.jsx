@@ -133,7 +133,15 @@ export default function MontagePage() {
                     })
                   }
                 >
-                  <video src={m.file_url} preload="metadata" muted className="w-full h-full object-cover" />
+                  {m.thumbnail_url ? (
+                     <img 
+                        src={m.thumbnail_url} 
+                        alt="Preview" 
+                        className="w-full h-full object-cover" 
+                     />
+                  ) : (
+                     <video src={m.file_url} preload="metadata" muted className="w-full h-full object-cover" />
+                  )}
                   <div className="play-overlay">
                     <i className="fas fa-play-circle"></i>
                   </div>
