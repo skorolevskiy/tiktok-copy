@@ -35,7 +35,7 @@ async def create_motion_cache(
     avatar = db.query(AvatarModel).filter(AvatarModel.id == motion.avatar_id).first()
     if not avatar:
         raise HTTPException(status_code=404, detail="Avatar not found")
-    avatar_url = avatar.image_url
+    avatar_url = get_file_url(request, settings.MINIO_BUCKET_AVATARS, avatar.filename)
 
     # Check Reference Motion (Video)
     reference = db.query(VideoModel).filter(VideoModel.id == motion.reference_id).first()
