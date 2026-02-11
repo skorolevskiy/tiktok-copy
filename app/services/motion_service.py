@@ -14,7 +14,7 @@ async def request_motion_generation(avatar_url: str, ref_url: str) -> str:
     cb_base = settings.CALLBACK_BASE_URL or "https://your-domain.com"
     payload = {
         "model": "kling-2.6/motion-control",
-        "callBackUrl": f"{cb_base}/avatar/callback",
+        "callBackUrl": f"{cb_base}/api/callback",
         "input": {
             "prompt": "Change man on video.",
             "input_urls": [avatar_url],

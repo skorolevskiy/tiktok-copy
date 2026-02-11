@@ -126,10 +126,10 @@ export default function MotionGenerationPage() {
                             {item.motion_video_url && (
                                 <div className="play-overlay"><i className="fas fa-play"></i></div>
                             )}
-                            <StatusBadge status={item.status} />
                         </div>
                         <div className="card-body">
                             <div className="card-info">ID: {shortId(item.id)}</div>
+                            <StatusBadge status={item.status} />
                             <div className="card-actions">
                                 <button className="btn-icon delete" onClick={(e) => {
                                     e.stopPropagation();
@@ -184,6 +184,7 @@ export default function MotionGenerationPage() {
 
         {player.open && (
             <VideoPlayerModal 
+                isOpen={true}
                 url={player.url} 
                 title={player.title} 
                 onClose={() => setPlayer({...player, open: false})} 

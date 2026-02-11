@@ -176,6 +176,7 @@ export default function ReferencesPage() {
 
       {player.open && (
         <VideoPlayerModal
+          isOpen={true}
           url={player.url}
           title={player.title}
           onClose={() => setPlayer({ ...player, open: false })}
