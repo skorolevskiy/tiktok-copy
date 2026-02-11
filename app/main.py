@@ -30,6 +30,17 @@ if FRONTEND_DIR:
     if os.path.isdir(_assets_dir):
         app.mount("/assets", StaticFiles(directory=_assets_dir), name="static-assets")
 
-    @app.get("/")
-    def serve_frontend():
+    @app.get("/{full_path:path}")
+    def serve_frontend(full_path: str):
+        # Allow API routes to pass through if technically they weren't caught (though they should be by include_router priority)
+        if full_path.startswith("api/") or full_path.startswith("docs") or full_path.startswith("openapi.json"):
+             from fastapi import HTTPException
+             raise HTTPException(status_code=404, detail="Not Found")
+             
+        # Check if file exists in root of frontend dir (e.g. favicon.ico, manifest.json)
+        potential_file = os.path.join(FRONTEND_DIR, full_path)
+        if os.path.isfile(potential_file):
+            return FileResponse(potential_file)
+
+        # Fallback to index.html for SPA routing
         return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
