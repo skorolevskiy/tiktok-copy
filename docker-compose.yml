@@ -57,11 +57,6 @@ services:
     environment:
       - POSTGRES_SERVER=db
       - REDIS_HOST=redis
-      - MINIO_URL=minio:9000      - redis
-      - minio
-    environment:
-      - POSTGRES_SERVER=db
-      - REDIS_HOST=redis
       - MINIO_URL=minio:9000
 
   nginx:
