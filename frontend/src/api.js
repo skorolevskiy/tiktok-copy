@@ -1,29 +1,90 @@
 const API_BASE = '/api';
 
-export async function fetchVideos() {
-  const res = await fetch(`${API_BASE}/videos`);
-  if (!res.ok) throw new Error('Failed to fetch videos');
+// --- REFERENCES (formerly Videos) ---
+
+export async function fetchReferences() {
+  const res = await fetch(`${API_BASE}/references`);
+  if (!res.ok) throw new Error('Failed to fetch references');
   return res.json();
 }
 
-export async function downloadVideos(urls) {
-  const res = await fetch(`${API_BASE}/videos/download`, {
+export async function createReference(urls) {
+  const res = await fetch(`${API_BASE}/references`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ tiktok_urls: urls }),
   });
   if (!res.ok) {
     const err = await res.json();
-    throw new Error(err.detail || 'Download failed');
+    throw new Error(err.detail || 'Failed to create reference');
   }
   return res.json();
 }
 
-export async function deleteVideo(id) {
-  const res = await fetch(`${API_BASE}/videos/${id}`, { method: 'DELETE' });
+export async function deleteReference(id) {
+  const res = await fetch(`${API_BASE}/references/${id}`, { method: 'DELETE' });
   if (!res.ok) throw new Error('Delete failed');
   return res.json();
 }
+
+// --- AVATARS ---
+
+export async function fetchAvatars() {
+  const res = await fetch(`${API_BASE}/avatars`);
+  if (!res.ok) throw new Error('Failed to fetch avatars');
+  return res.json();
+}
+
+export async function uploadAvatar(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('source_type', 'Upload');
+
+  const res = await fetch(`${API_BASE}/avatars`, {
+    method: 'POST',
+    body: formData,
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.detail || 'Upload failed');
+  }
+  return res.json();
+}
+
+export async function deleteAvatar(id) {
+  const res = await fetch(`${API_BASE}/avatars/${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error('Delete failed');
+  return res.json();
+}
+
+// --- MOTIONS ---
+
+export async function fetchMotions() {
+  const res = await fetch(`${API_BASE}/motions`);
+  if (!res.ok) throw new Error('Failed to fetch motions');
+  return res.json();
+}
+
+export async function createMotion(avatarId, referenceId) {
+  const res = await fetch(`${API_BASE}/motions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ avatar_id: avatarId, reference_id: referenceId }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.detail || 'Create motion failed');
+  }
+  return res.json();
+}
+
+export async function deleteMotion(id) {
+  const res = await fetch(`${API_BASE}/motions/${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error('Delete failed');
+  return res.json();
+}
+
+// --- TRACKS ---
 
 export async function fetchTracks(search = '') {
   const query = search ? `?search=${encodeURIComponent(search)}` : '';
@@ -55,17 +116,19 @@ export async function deleteTrack(id) {
   return res.json();
 }
 
+// --- MONTAGE ---
+
 export async function fetchMontages() {
   const res = await fetch(`${API_BASE}/montage`);
   if (!res.ok) throw new Error('Failed to fetch montages');
   return res.json();
 }
 
-export async function createMontage(videoId, trackId) {
+export async function createMontage(motionId, trackId) {
   const res = await fetch(`${API_BASE}/montage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ video_id: videoId, track_id: trackId }),
+    body: JSON.stringify({ motion_id: motionId, track_id: trackId }),
   });
   if (!res.ok) {
     const err = await res.json();
