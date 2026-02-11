@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { ToastProvider } from './hooks/useToast';
 import Sidebar from './components/Sidebar';
 import ReferencesPage from './components/ReferencesPage';
@@ -8,23 +9,23 @@ import TracksPage from './components/TracksPage';
 import MontagePage from './components/MontagePage';
 
 export default function App() {
-  const [activeSection, setActiveSection] = useState('avatars');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <ToastProvider>
       <Sidebar
-        active={activeSection}
-        onNavigate={setActiveSection}
         isOpen={sidebarOpen}
         onToggle={setSidebarOpen}
       />
       <main className="content">
-        {activeSection === 'avatars' && <AvatarsPage />}
-        {activeSection === 'references' && <ReferencesPage />}
-        {activeSection === 'motions' && <MotionGenerationPage />}
-        {activeSection === 'tracks' && <TracksPage />}
-        {activeSection === 'montage' && <MontagePage />}
+        <Routes>
+          <Route path="/" element={<Navigate to="/avatars" replace />} />
+          <Route path="/avatars" element={<AvatarsPage />} />
+          <Route path="/references" element={<ReferencesPage />} />
+          <Route path="/motions" element={<MotionGenerationPage />} />
+          <Route path="/tracks" element={<TracksPage />} />
+          <Route path="/montage" element={<MontagePage />} />
+        </Routes>
       </main>
     </ToastProvider>
   );

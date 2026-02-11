@@ -1,14 +1,15 @@
-export default function Sidebar({ active, onNavigate, isOpen, onToggle }) {
+import { NavLink } from 'react-router-dom';
+
+export default function Sidebar({ isOpen, onToggle }) {
   const links = [
-    { id: 'avatars', icon: 'fa-user-circle', label: 'Аватары' },
-    { id: 'references', icon: 'fa-film', label: 'Референсы' },
-    { id: 'motions', icon: 'fa-running', label: 'Генерация' },
-    { id: 'tracks', icon: 'fa-music', label: 'Треки' },
-    { id: 'montage', icon: 'fa-wand-magic-sparkles', label: 'Монтаж' },
+    { path: '/avatars', icon: 'fa-user-circle', label: 'Аватары' },
+    { path: '/references', icon: 'fa-film', label: 'Референсы' },
+    { path: '/motions', icon: 'fa-running', label: 'Генерация' },
+    { path: '/tracks', icon: 'fa-music', label: 'Треки' },
+    { path: '/montage', icon: 'fa-wand-magic-sparkles', label: 'Монтаж' },
   ];
 
-  const handleNav = (id) => {
-    onNavigate(id);
+  const handleNav = () => {
     if (onToggle) onToggle(false);
   };
 
@@ -32,17 +33,14 @@ export default function Sidebar({ active, onNavigate, isOpen, onToggle }) {
         </div>
         <ul className="nav-links">
           {links.map((link) => (
-            <li key={link.id}>
-              <a
-                href="#"
-                className={`nav-link ${active === link.id ? 'active' : ''}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleNav(link.id);
-                }}
+            <li key={link.path}>
+              <NavLink
+                to={link.path}
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                onClick={handleNav}
               >
                 <i className={`fas ${link.icon}`}></i> {link.label}
-              </a>
+              </NavLink>
             </li>
           ))}
         </ul>

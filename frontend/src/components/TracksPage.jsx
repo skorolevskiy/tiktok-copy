@@ -123,19 +123,28 @@ export default function TracksPage() {
           tracks.map((t) => (
             <div className="card track-card group" key={t.id}>
               <div className="card-body">
-                <div className="track-info">
+                <div className="track-info mb-3">
                   <div className="track-icon">
                     <i className="fas fa-music"></i>
                   </div>
-                  <div className="track-details">
-                    <div className="card-title" title={t.name}>{t.name}</div>
-                    <div className="track-artist" title={t.artist}>
+                  <div className="track-details min-w-0">
+                    <div className="card-title truncate" title={t.name}>{t.name}</div>
+                    <div className="track-artist truncate" title={t.artist}>
                       {t.artist || 'Неизвестный артист'}
                     </div>
                   </div>
                 </div>
+
+                <div className="mt-2 mb-3 bg-dark-lighter rounded-lg p-2">
+                    <audio 
+                        controls 
+                        className="w-full h-8" 
+                        src={`/api/files/${t.file_path}`} 
+                        preload="none"
+                    />
+                </div>
                 
-                <div className="track-stats">
+                <div className="track-stats text-xs text-text-muted">
                   {t.duration_seconds > 0 && (
                     <span>
                       <i className="fas fa-clock"></i>{' '}

@@ -3,12 +3,8 @@
 # Wait for DB
 python app/backend_pre_start.py
 
-# Check if migrations exist, if not create them (For demo purposes only)
-# In production, migrations should be committed to the repo
-if [ ! "$(ls -A alembic/versions)" ]; then
-    echo "No migrations found. Generating initial migration..."
-    alembic revision --autogenerate -m "Initial migration"
-fi
+# Always check for schema changes and generate migration if needed
+alembic revision --autogenerate -m "Schema update"
 
 # Run migrations
 alembic upgrade head
