@@ -118,13 +118,39 @@ def process_edit_task(edit_id: str):
         edit.status = EditStatus.processing
         db.commit()
 
-        # Get MotionCache to get the actual video
-        motion = db.query(MotionCache).filter(MotionCache.id == edit.motion_id).first()
-        if not motion or not motion.motion_video_url:
-            print("Motion video missing")
-            edit.status = EditStatus.failed
-            db.commit()
-            return
+        video_local = None
+        video_filename = None
+        bucket_name = None
+
+        if edit.motion_id:
+            # Get MotionCache to get the actual video
+            motion = db.query(MotionCache).filter(MotionCache.id == edit.motion_id).first()
+            if not motion or not motion.motion_video_url:
+                print("Motion video missing")
+                edit.status = EditStatus.failed
+                db.commit()
+                return
+            
+            # Simple heuristic: take last part of URL
+            video_filename = motion.motion_video_url.split("/")[-1]
+            bucket_name = settings.MINIO_BUCKET_MOTIONS
+            
+        elif edit.video_id:
+            video = db.query(Video).filter(Video.id == edit.video_id).first()
+            if not video or not video.file_path:
+                print("Reference video missing")
+                edit.status = EditStatus.failed
+                db.commit()
+                return
+            
+            video_filename = video.file_path
+            bucket_name = settings.MINIO_BUCKET_TIKTOK
+        
+        else:
+             print("No video source for edit")
+             edit.status = EditStatus.failed
+             db.commit()
+             return
 
         track = db.query(Track).filter(Track.id == edit.track_id).first()
 
@@ -134,20 +160,12 @@ def process_edit_task(edit_id: str):
             return
 
         # Download both files
-        # We need to handle motion video URL - it might include domain prefix now
-        # Ideally we parse it or if it's external URL we just download it.
-        # But our system stores it in MinIO.
-        # If it is stored in MinIO motions bucket, let's try to extract object name.
-        
-        # Simple heuristic: take last part of URL
-        video_filename = motion.motion_video_url.split("/")[-1]
-        
         video_local = f"/tmp/{video_filename}"
         track_local = f"/tmp/{track.file_path}"
         output_local = f"/tmp/out_{edit.id}.mp4"
 
         try:
-            minio_client.download_file(settings.MINIO_BUCKET_MOTIONS, video_filename, video_local)
+            minio_client.download_file(bucket_name, video_filename, video_local)
             minio_client.download_file(settings.MINIO_BUCKET_AUDIO, track.file_path, track_local)
 
 

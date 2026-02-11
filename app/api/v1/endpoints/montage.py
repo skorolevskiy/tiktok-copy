@@ -5,6 +5,7 @@ import uuid
 
 from app.api import deps
 from app.models.motion_cache import MotionCache
+from app.models.video import Video
 from app.models.edit import Edit, EditStatus
 from app.models.track import Track
 from app.schemas.edit import EditRequest, EditResponse
@@ -21,21 +22,38 @@ def create_montage(
     request: Request,
     db: Session = Depends(deps.get_db),
 ):
-    """Create a new montage: overlay a track onto a generated motion video."""
-    motion = db.query(MotionCache).filter(MotionCache.id == payload.motion_id).first()
-    if not motion:
-        raise HTTPException(status_code=404, detail="Motion video not found")
+    """Create a new montage: overlay a track onto a generated motion video or a reference video."""
+    video_id = None
+    motion_id = None
 
-    # Check if motion is successful/ready?
-    if motion.status != "success": # Assuming status for success is 'success' in MotionCache
-         raise HTTPException(status_code=400, detail="Motion video is not ready for editing")
+    if payload.motion_id:
+        motion = db.query(MotionCache).filter(MotionCache.id == payload.motion_id).first()
+        if not motion:
+            raise HTTPException(status_code=404, detail="Motion video not found")
+        # Check if motion is successful/ready?
+        if motion.status != "success": 
+            raise HTTPException(status_code=400, detail="Motion video is not ready for editing")
+        motion_id = motion.id
+
+    elif payload.video_id:
+        video = db.query(Video).filter(Video.id == payload.video_id).first()
+        if not video:
+             raise HTTPException(status_code=404, detail="Reference video not found")
+        # Check if video is downloaded
+        if video.status != "downloaded" and video.status != "completed": # Accomodate possible statuses
+             raise HTTPException(status_code=400, detail="Reference video is not ready (not downloaded)")
+        video_id = video.id
+
+    else:
+        raise HTTPException(status_code=400, detail="Either motion_id or video_id must be provided")
 
     track = db.query(Track).filter(Track.id == payload.track_id).first()
     if not track:
         raise HTTPException(status_code=404, detail="Track not found")
 
     edit_job = Edit(
-        motion_id=motion.id,
+        motion_id=motion_id,
+        video_id=video_id,
         track_id=track.id,
         status=EditStatus.pending,
     )
@@ -47,7 +65,8 @@ def create_montage(
 
     return EditResponse(
         id=edit_job.id,
-        motion_id=motion.id,
+        motion_id=motion_id,
+        video_id=video_id,
         track_id=track.id,
         status=edit_job.status.value,
         file_url=None,

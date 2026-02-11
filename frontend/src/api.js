@@ -124,11 +124,18 @@ export async function fetchMontages() {
   return res.json();
 }
 
-export async function createMontage(motionId, trackId) {
+export async function createMontage(sourceId, sourceType, trackId) {
+  const body = { track_id: trackId };
+  if (sourceType === 'motion') {
+    body.motion_id = sourceId;
+  } else {
+    body.video_id = sourceId;
+  }
+
   const res = await fetch(`${API_BASE}/montage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ motion_id: motionId, track_id: trackId }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     const err = await res.json();

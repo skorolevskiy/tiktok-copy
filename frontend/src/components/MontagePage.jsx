@@ -11,9 +11,11 @@ export default function MontagePage() {
   const [loading, setLoading] = useState(true);
   const [createModal, setCreateModal] = useState(false);
   const [motions, setMotions] = useState([]); 
+  const [videos, setVideos] = useState([]);
   const [tracks, setTracks] = useState([]);
   
-  const [selectedMotion, setSelectedMotion] = useState('');
+  const [sourceType, setSourceType] = useState('motion'); // 'motion' | 'video'
+  const [selectedSourceId, setSelectedSourceId] = useState('');
   const [selectedTrack, setSelectedTrack] = useState('');
   
   const [creating, setCreating] = useState(false);
@@ -47,16 +49,21 @@ export default function MontagePage() {
 
   const openCreateModal = async () => {
     try {
-      const [mData, tData] = await Promise.all([
+      const [mData, tData, vData] = await Promise.all([
         api.fetchMotions(),
         api.fetchTracks(),
+        api.fetchReferences(),
       ]);
       setMotions(
         mData.filter((m) => ['success', 'completed'].includes(m.status))
       );
+      setVideos(
+        vData.filter((v) => ['downloaded', 'completed'].includes(v.status))
+      );
       setTracks(tData);
-      setSelectedMotion('');
+      setSelectedSourceId('');
       setSelectedTrack('');
+      setSourceType('motion');
       setStep(1);
       setCreateModal(true);
     } catch {
@@ -65,10 +72,10 @@ export default function MontagePage() {
   };
 
   const handleCreate = async () => {
-    if (!selectedMotion || !selectedTrack) return;
+    if (!selectedSourceId || !selectedTrack) return;
     setCreating(true);
     try {
-      await api.createMontage(selectedMotion, selectedTrack);
+      await api.createMontage(selectedSourceId, sourceType, selectedTrack);
       showToast('Монтаж создан! Обработка началась.', 'success');
       setCreateModal(false);
       loadMontages();
@@ -81,12 +88,16 @@ export default function MontagePage() {
 
   const stepTitle =
     step === 1
-      ? 'Шаг 1 — Выберите сгенерированное видео'
+      ? 'Шаг 1 — Выберите видео'
       : step === 2
         ? 'Шаг 2 — Выберите трек'
         : 'Подтверждение';
 
-  const selectedMotionObj = motions.find((m) => m.id === selectedMotion);
+  const selectedSourceObj = 
+    sourceType === 'motion' 
+      ? motions.find((m) => m.id === selectedSourceId)
+      : videos.find((v) => v.id === selectedSourceId);
+      
   const selectedTrackObj = tracks.find((t) => t.id === selectedTrack);
 
   return (
@@ -167,30 +178,81 @@ export default function MontagePage() {
 
               {step === 1 && (
                 <div className="space-y-4">
-                  <div className="selection-grid h-[50vh] max-h-[500px]">
-                    {motions.map((m) => (
-                      <div
-                        key={m.id}
-                        className={`selection-item group relative ${selectedMotion === m.id ? 'selected' : ''}`}
-                        onClick={() => setSelectedMotion(m.id)}
-                      >
-                         {m.motion_thumbnail_url ? (
-                            <img src={m.motion_thumbnail_url} alt="motion" />
-                         ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-dark-lighter">
-                                <i className="fas fa-film text-2xl opacity-50"></i>
-                            </div>
-                         )}
-                         <div className="absolute bottom-0 left-0 right-0 p-2 bg-black/60 text-xs text-center truncate">
-                            {shortId(m.id)}
-                         </div>
-                      </div>
-                    ))}
+                  {/* Source Tabs */}
+                  <div className="flex space-x-2 border-b border-border mb-4">
+                    <button
+                      className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${sourceType === 'motion' ? 'border-primary text-white' : 'border-transparent text-text-muted hover:text-white'}`}
+                      onClick={() => { setSourceType('motion'); setSelectedSourceId(''); }}
+                    >
+                      Generated Motions
+                    </button>
+                    <button
+                      className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${sourceType === 'video' ? 'border-primary text-white' : 'border-transparent text-text-muted hover:text-white'}`}
+                      onClick={() => { setSourceType('video'); setSelectedSourceId(''); }}
+                    >
+                      Reference Videos
+                    </button>
+                  </div>
+
+                  <div className="selection-grid h-[50vh] max-h-[500px] overflow-y-auto">
+                    {sourceType === 'motion' ? (
+                        motions.length === 0 ? (
+                            <div className="col-span-full text-center text-text-muted py-8">Нет доступных motion видео</div>
+                        ) : (
+                            motions.map((m) => (
+                              <div
+                                key={m.id}
+                                className={`selection-item group relative cursor-pointer border rounded-lg overflow-hidden ${selectedSourceId === m.id ? 'border-primary ring-2 ring-primary/50' : 'border-border'}`}
+                                onClick={() => setSelectedSourceId(m.id)}
+                              >
+                                 <div className="aspect-[9/16] relative bg-dark-lighter">
+                                     {m.motion_thumbnail_url ? (
+                                        <img src={m.motion_thumbnail_url} alt="motion" className="w-full h-full object-cover" />
+                                     ) : (
+                                        <div className="w-full h-full flex items-center justify-center">
+                                            <i className="fas fa-film text-2xl opacity-50"></i>
+                                        </div>
+                                     )}
+                                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
+                                 </div>
+                                 <div className="absolute bottom-0 left-0 right-0 p-2 bg-black/80 text-xs text-center truncate text-white">
+                                    {shortId(m.id)}
+                                 </div>
+                              </div>
+                            ))
+                        )
+                    ) : (
+                        videos.length === 0 ? (
+                            <div className="col-span-full text-center text-text-muted py-8">Нет доступных референсных видео</div>
+                        ) : (
+                            videos.map((v) => (
+                              <div
+                                key={v.id}
+                                className={`selection-item group relative cursor-pointer border rounded-lg overflow-hidden ${selectedSourceId === v.id ? 'border-primary ring-2 ring-primary/50' : 'border-border'}`}
+                                onClick={() => setSelectedSourceId(v.id)}
+                              >
+                                 <div className="aspect-[9/16] relative bg-dark-lighter">
+                                     {v.thumbnail_url ? (
+                                        <img src={v.thumbnail_url} alt="video" className="w-full h-full object-cover" />
+                                     ) : (
+                                        <div className="w-full h-full flex items-center justify-center">
+                                            <i className="fas fa-video text-2xl opacity-50"></i>
+                                        </div>
+                                     )}
+                                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
+                                 </div>
+                                 <div className="absolute bottom-0 left-0 right-0 p-2 bg-black/80 text-xs text-center truncate text-white">
+                                    {shortId(v.id)}
+                                 </div>
+                              </div>
+                            ))
+                        )
+                    )}
                   </div>
                   <div className="modal-actions">
                     <button
                       className="btn btn-primary"
-                      disabled={!selectedMotion}
+                      disabled={!selectedSourceId}
                       onClick={() => setStep(2)}
                     >
                       Далее <i className="fas fa-arrow-right"></i>
@@ -243,7 +305,7 @@ export default function MontagePage() {
                   </div>
                   <h3 className="text-xl font-bold text-white mb-2">Всё готово!</h3>
                   <p className="text-text-muted mb-8 max-w-xs mx-auto">
-                    Вы выбрали моушен <b>{selectedMotionObj ? shortId(selectedMotionObj.id) : '...'}</b> и трек <b>{selectedTrackObj ? selectedTrackObj.name : '...'}</b>.
+                    Вы выбрали {sourceType === 'motion' ? 'моушен' : 'видео'} <b>{selectedSourceObj ? shortId(selectedSourceObj.id) : '...'}</b> и трек <b>{selectedTrackObj ? selectedTrackObj.name : '...'}</b>.
                   </p>
                   
                   <div className="modal-actions justify-between">
