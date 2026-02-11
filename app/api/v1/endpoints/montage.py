@@ -73,7 +73,7 @@ def list_all_montages(
     return [
         EditResponse(
             id=e.id,
-            video_id=e.video_id,
+            motion_id=e.motion_id,
             track_id=e.track_id,
             status=e.status.value if hasattr(e.status, "value") else e.status,
             file_url=get_file_url(request, settings.MINIO_BUCKET_PROCESSED, e.processed_file_path)
@@ -96,7 +96,7 @@ def get_montage(
         raise HTTPException(status_code=404, detail="Montage not found")
     return EditResponse(
         id=e.id,
-        video_id=e.video_id,
+        motion_id=e.motion_id,
         track_id=e.track_id,
         status=e.status.value if hasattr(e.status, "value") else e.status,
         file_url=get_file_url(request, settings.MINIO_BUCKET_PROCESSED, e.processed_file_path)

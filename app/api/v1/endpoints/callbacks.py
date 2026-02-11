@@ -80,7 +80,10 @@ async def handle_callback(
                                 len(content),
                                 content_type="video/mp4"
                             )
-                            local_video_url = minio_client.get_url(settings.MINIO_BUCKET_MOTIONS, video_filename)
+                            # local_video_url = minio_client.get_url(settings.MINIO_BUCKET_MOTIONS, video_filename)
+                            base_url = settings.CALLBACK_BASE_URL or "" 
+                            base_url = base_url.rstrip("/")
+                            local_video_url = f"{base_url}{settings.API_V1_STR}/files/{settings.MINIO_BUCKET_MOTIONS}/{video_filename}"
 
                             # Generate thumbnail
                             thumb_path = generate_thumbnail(temp_video)
@@ -96,7 +99,8 @@ async def handle_callback(
                                         len(thumb_content),
                                         content_type="image/jpeg"
                                     )
-                                    motion_thumbnail_url = minio_client.get_url(settings.MINIO_BUCKET_MOTIONS, thumb_filename)
+                                    # motion_thumbnail_url = minio_client.get_url(settings.MINIO_BUCKET_MOTIONS, thumb_filename)
+                                    motion_thumbnail_url = f"{base_url}{settings.API_V1_STR}/files/{settings.MINIO_BUCKET_MOTIONS}/{thumb_filename}"
                                 
                                 try: os.remove(thumb_path)
                                 except: pass
