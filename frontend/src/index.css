@@ -80,7 +80,7 @@
 
   /* Sidebar */
   .sidebar {
-      @apply w-[260px] bg-dark-sidebar border-r border-border flex flex-col fixed top-0 left-0 h-screen z-50 transition-transform duration-300 -translate-x-full lg:translate-x-0;
+      @apply w-[260px] bg-dark-sidebar border-r border-border flex flex-col fixed top-0 left-0 h-screen z-[100] transition-transform duration-300 -translate-x-full lg:translate-x-0;
   }
   .sidebar.open {
       @apply translate-x-0;
@@ -210,8 +210,11 @@
   .sidebar-overlay.active {
       @apply opacity-100 pointer-events-auto;
   }
-
-  .nav-link {
+  
+  /* Z-index adjustments */
+  .sidebar {
+      @apply w-[260px] bg-dark-sidebar border-r border-border flex flex-col fixed top-0 left-0 h-screen z-[100] transition-transform duration-300 -translate-x-full lg:translate-x-0;
+  }
     @apply flex items-center gap-3 px-4 py-3 text-text-muted rounded-lg transition-colors hover:bg-primary/10 hover:text-text;
   }
   .nav-link.active {
