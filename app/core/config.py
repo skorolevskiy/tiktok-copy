@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     MINIO_BUCKET_MOTIONS: str = "motions"
     MINIO_SECURE: bool = False
 
+    # External APIs
+    KIE_API_KEY: Optional[str] = None
+    CALLBACK_BASE_URL: Optional[str] = None
+
     def model_post_init(self, __context):
         if self.SQLALCHEMY_DATABASE_URI is None:
             self.SQLALCHEMY_DATABASE_URI = f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}/{self.POSTGRES_DB}"

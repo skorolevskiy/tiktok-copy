@@ -1,6 +1,6 @@
 import aiohttp
 import logging
-from core.config import settings
+from app.core.config import settings
 from fastapi import HTTPException
 import uuid
 
