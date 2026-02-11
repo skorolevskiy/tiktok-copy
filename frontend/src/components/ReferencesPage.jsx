@@ -117,9 +117,6 @@ export default function ReferencesPage() {
                 )}
               </div>
               <div className="card-body">
-                <div className="card-info">
-                  <strong>ID:</strong> {shortId(item.id)}
-                </div>
                 <StatusBadge status={item.status} />
                 <div className="card-info" title={item.original_url}>
                   <a
