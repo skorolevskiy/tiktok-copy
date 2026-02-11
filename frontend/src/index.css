@@ -1,6 +1,37 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #6c5ce7;
+  --color-primary-hover: #5a4bd1;
+  --color-primary-light: #a29bfe;
+
+  --color-dark: #0f0f23;
+  --color-dark-card: #1a1a2e;
+  --color-dark-sidebar: #16213e;
+  --color-dark-input: #1a1a2e;
+  --color-dark-lighter: #1e272e;
+
+  --color-text: #e0e0e0;
+  --color-text-muted: #8b95a2;
+
+  --color-border: #2a2a4a;
+
+  --color-danger: #e17055;
+  --color-success: #00b894;
+  --color-warning: #fdcb6e;
+
+  --animate-fade-in: fadeIn 0.2s ease-out;
+  --animate-scale-in: scaleIn 0.2s ease-out;
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes scaleIn {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+}
 
 @layer base {
   body {
@@ -205,6 +236,50 @@
       @apply w-full max-h-[80vh] rounded-lg bg-black;
   }
 
+  /* Tracks & Montage Specifics */
+  .search-bar {
+      @apply flex items-center bg-dark-input border border-border rounded-lg px-4 py-2 mb-6 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-colors;
+  }
+  .search-bar i {
+      @apply text-text-muted mr-3;
+  }
+  .search-bar input {
+      @apply bg-transparent border-none text-text w-full focus:outline-none p-0;
+  }
+
+  .track-card .card-body {
+       @apply relative p-5 bg-dark-card h-full flex flex-col justify-between;
+  }
+  
+  .track-info {
+      @apply flex items-start gap-4 mb-4;
+  }
+  
+  .track-icon {
+      @apply w-12 h-12 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xl shrink-0;
+  }
+  
+  .track-details {
+      @apply flex-1 min-w-0;
+  }
+  
+  .card-title {
+      @apply text-base font-semibold text-white mb-1 truncate;
+  }
+  
+  .track-artist {
+      @apply text-sm text-text-muted truncate;
+  }
+  
+  .track-stats {
+      @apply flex flex-col gap-1.5 text-xs text-text-muted mb-4 p-3 bg-dark-lighter/50 rounded-lg;
+  }
+  
+  .track-stats span {
+      @apply flex items-center gap-2;
+  }
+  .track-stats i { @apply w-4 text-center text-primary-light/70; }
+
   /* Utilities */
   .loading, .empty-state {
       @apply flex flex-col items-center justify-center h-64 text-text-muted gap-4 text-lg;
@@ -216,18 +291,4 @@
 
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-@keyframes scaleIn {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-.animate-fade-in {
-    animation: fadeIn 0.2s ease-out;
-}
-.animate-scale-in {
-    animation: scaleIn 0.2s ease-out;
-}
+/* Keyframes defined in theme now */

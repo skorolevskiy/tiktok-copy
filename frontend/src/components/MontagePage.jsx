@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as api from '../api';
 import { useToast } from '../hooks/useToast';
-import { truncateUrl, shortId, formatDuration } from '../utils';
+import { shortId, formatDuration } from '../utils';
 import Modal from './Modal';
 import StatusBadge from './StatusBadge';
 import VideoPlayerModal from './VideoPlayerModal';
@@ -10,7 +10,6 @@ export default function MontagePage() {
   const [montages, setMontages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [createModal, setCreateModal] = useState(false);
-  // Renamed from videos -> motions
   const [motions, setMotions] = useState([]); 
   const [tracks, setTracks] = useState([]);
   
@@ -48,12 +47,10 @@ export default function MontagePage() {
 
   const openCreateModal = async () => {
     try {
-      // Changed fetchVideos to fetchMotions
       const [mData, tData] = await Promise.all([
         api.fetchMotions(),
         api.fetchTracks(),
       ]);
-      // Filter for successful motions
       setMotions(
         mData.filter((m) => ['success', 'completed'].includes(m.status))
       );
@@ -93,8 +90,8 @@ export default function MontagePage() {
   const selectedTrackObj = tracks.find((t) => t.id === selectedTrack);
 
   return (
-    <section className="section">
-      <div className="section-header">
+    <div className="page-container">
+      <div className="page-header">
         <h1>Монтаж</h1>
         <button className="btn btn-primary" onClick={openCreateModal}>
           <i className="fas fa-wand-magic-sparkles"></i> Создать монтаж
@@ -103,17 +100,17 @@ export default function MontagePage() {
 
       <div className="card-grid">
         {loading ? (
-          <div className="loading">
-            <i className="fas fa-spinner fa-spin"></i> Загрузка...
+          <div className="col-span-full loading">
+            <i className="fas fa-spinner fa-spin text-4xl mb-2"></i> Загрузка...
           </div>
         ) : montages.length === 0 ? (
-          <div className="empty-state">
+          <div className="col-span-full empty-state">
             <i className="fas fa-wand-magic-sparkles"></i>
             <p>Нет монтажей. Создайте первый монтаж!</p>
           </div>
         ) : (
           montages.map((m) => (
-            <div className="card montage-card" key={m.id}>
+            <div className="card video-card group" key={m.id}>
               {m.file_url ? (
                 <div
                   className="card-preview"
@@ -125,39 +122,30 @@ export default function MontagePage() {
                     })
                   }
                 >
-                  <video src={m.file_url} preload="metadata" muted />
+                  <video src={m.file_url} preload="metadata" muted className="w-full h-full object-cover" />
                   <div className="play-overlay">
                     <i className="fas fa-play-circle"></i>
                   </div>
-                </div>
-              ) : (
-                <div className="card-preview">
-                  <div className="card-preview-placeholder">
-                    <i className="fas fa-wand-magic-sparkles"></i>
-                    <span>
-                      {['pending', 'processing'].includes(m.status)
-                        ? 'Обработка...'
-                        : 'Нет файла'}
-                    </span>
-                  </div>
-                </div>
-              )}
-              <div className="card-body">
-                <div className="card-title">Монтаж {shortId(m.id)}</div>
-                <div className="card-meta">
                   <StatusBadge status={m.status} />
                 </div>
-                <div className="card-actions">
-                  {m.file_url && (
-                    <a
-                      href={m.file_url}
-                      download
-                      className="btn-icon"
-                      title="Скачать"
-                    >
-                      <i className="fas fa-download"></i>
-                    </a>
-                  )}
+              ) : (
+                <div className="card-preview bg-dark-lighter flex flex-col items-center justify-center p-4 text-center">
+                    <div className="w-16 h-16 rounded-full bg-dark-card flex items-center justify-center mb-3">
+                        <i className={`fas ${['failed', 'error'].includes(m.status) ? 'fa-exclamation-triangle text-danger' : 'fa-cog fa-spin text-primary' } text-2xl`}></i>
+                    </div>
+                    <span className="text-sm font-medium text-text-muted">
+                      {['pending', 'processing'].includes(m.status)
+                        ? 'Обработка...'
+                        : 'Ошибка генерации'}
+                    </span>
+                    <StatusBadge status={m.status} />
+                </div>
+              )}
+              
+              <div className="card-body">
+                <div className="card-info font-medium text-white">ID: {shortId(m.id)}</div>
+                <div className="card-actions justify-end">
+                    {/* Additional actions can go here */}
                 </div>
               </div>
             </div>
@@ -165,225 +153,129 @@ export default function MontagePage() {
         )}
       </div>
 
-      {/* Create Montage Modal — Wizard */}
-      <Modal
-        isOpen={createModal}
-        onClose={() => setCreateModal(false)}
-        title={stepTitle}
-        large
-        footer={
-          <div className="picker-footer">
-            <div className="picker-steps">
-              <span className={`step-dot ${step >= 1 ? 'active' : ''}`} />
-              <span className={`step-dot ${step >= 2 ? 'active' : ''}`} />
-              <span className={`step-dot ${step >= 3 ? 'active' : ''}`} />
-            </div>
-            <div className="picker-footer-actions">
-              {step > 1 && (
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setStep(step - 1)}
-                >
-                  <i className="fas fa-arrow-left"></i> Назад
-                </button>
-              )}
+      {createModal && (
+        <Modal title={stepTitle} onClose={() => setCreateModal(false)} large>
+          <div className="p-1">
+              {/* Stepper Header */}
+              <div className="flex items-center mb-8 px-4">
+                  <div className={`flex items-center justify-center w-8 h-8 rounded-full font-bold transition-colors ${step >= 1 ? 'bg-primary text-white' : 'bg-dark-input text-text-muted'}`}>1</div>
+                  <div className={`h-1 flex-1 mx-2 rounded ${step >= 2 ? 'bg-primary' : 'bg-dark-input'}`}></div>
+                  <div className={`flex items-center justify-center w-8 h-8 rounded-full font-bold transition-colors ${step >= 2 ? 'bg-primary text-white' : 'bg-dark-input text-text-muted'}`}>2</div>
+                  <div className={`h-1 flex-1 mx-2 rounded ${step >= 3 ? 'bg-primary' : 'bg-dark-input'}`}></div>
+                  <div className={`flex items-center justify-center w-8 h-8 rounded-full font-bold transition-colors ${step >= 3 ? 'bg-primary text-white' : 'bg-dark-input text-text-muted'}`}>3</div>
+              </div>
+
               {step === 1 && (
-                <button
-                  className="btn btn-primary"
-                  disabled={!selectedMotion}
-                  onClick={() => setStep(2)}
-                >
-                  Далее <i className="fas fa-arrow-right"></i>
-                </button>
+                <div className="space-y-4">
+                  <div className="selection-grid h-[50vh] max-h-[500px]">
+                    {motions.map((m) => (
+                      <div
+                        key={m.id}
+                        className={`selection-item group relative ${selectedMotion === m.id ? 'selected' : ''}`}
+                        onClick={() => setSelectedMotion(m.id)}
+                      >
+                         {m.motion_thumbnail_url ? (
+                            <img src={m.motion_thumbnail_url} alt="motion" />
+                         ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-dark-lighter">
+                                <i className="fas fa-film text-2xl opacity-50"></i>
+                            </div>
+                         )}
+                         <div className="absolute bottom-0 left-0 right-0 p-2 bg-black/60 text-xs text-center truncate">
+                            {shortId(m.id)}
+                         </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="modal-actions">
+                    <button
+                      className="btn btn-primary"
+                      disabled={!selectedMotion}
+                      onClick={() => setStep(2)}
+                    >
+                      Далее <i className="fas fa-arrow-right"></i>
+                    </button>
+                  </div>
+                </div>
               )}
+
               {step === 2 && (
-                <button
-                  className="btn btn-primary"
-                  disabled={!selectedTrack}
-                  onClick={() => setStep(3)}
-                >
-                  Далее <i className="fas fa-arrow-right"></i>
-                </button>
+                <div className="space-y-4">
+                    <div className="flex flex-col gap-2 max-h-[50vh] overflow-y-auto pr-2">
+                        {tracks.map((t) => (
+                        <div
+                            key={t.id}
+                            className={`flex items-center p-3 rounded-lg cursor-pointer border transition-all ${selectedTrack === t.id ? 'bg-primary/10 border-primary' : 'bg-dark-input border-border hover:border-primary/50'}`}
+                            onClick={() => setSelectedTrack(t.id)}
+                        >
+                            <div className="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center mr-3 shrink-0">
+                                <i className="fas fa-music"></i>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <div className="font-medium truncate text-white">{t.name}</div>
+                                <div className="text-xs text-text-muted truncate">{t.artist}</div>
+                            </div>
+                            <div className="text-xs text-text-muted ml-3 whitespace-nowrap">
+                                {formatDuration(t.duration_seconds)}
+                            </div>
+                        </div>
+                        ))}
+                    </div>
+                  <div className="modal-actions justify-between">
+                    <button className="btn btn-secondary" onClick={() => setStep(1)}>
+                         <i className="fas fa-arrow-left"></i> Назад
+                    </button>
+                    <button
+                      className="btn btn-primary"
+                      disabled={!selectedTrack}
+                      onClick={() => setStep(3)}
+                    >
+                      Далее <i className="fas fa-arrow-right"></i>
+                    </button>
+                  </div>
+                </div>
               )}
+
               {step === 3 && (
-                <button
-                  className="btn btn-primary"
-                  disabled={creating}
-                  onClick={handleCreate}
-                >
-                  {creating ? (
-                    <>
-                      <i className="fas fa-spinner fa-spin"></i> Создание...
-                    </>
-                  ) : (
-                    <>
-                      <i className="fas fa-wand-magic-sparkles"></i> Создать монтаж
-                    </>
-                  )}
-                </button>
+                <div className="text-center py-8">
+                  <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i className="fas fa-check text-4xl"></i>
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">Всё готово!</h3>
+                  <p className="text-text-muted mb-8 max-w-xs mx-auto">
+                    Вы выбрали моушен <b>{selectedMotionObj ? shortId(selectedMotionObj.id) : '...'}</b> и трек <b>{selectedTrackObj ? selectedTrackObj.name : '...'}</b>.
+                  </p>
+                  
+                  <div className="modal-actions justify-between">
+                    <button className="btn btn-secondary" onClick={() => setStep(2)} disabled={creating}>
+                        <i className="fas fa-arrow-left"></i> Назад
+                    </button>
+                    <button
+                      className="btn btn-primary px-8"
+                      onClick={handleCreate}
+                      disabled={creating}
+                    >
+                        {creating ? (
+                            <><i className="fas fa-spinner fa-spin"></i> Создание...</>
+                        ) : (
+                            <><i className="fas fa-check-circle"></i> Создать монтаж</>
+                        )}
+                    </button>
+                  </div>
+                </div>
               )}
-            </div>
           </div>
-        }
-      >
-        {/* Step 1: Pick Motion (formerly Video) */}
-        {step === 1 && (
-          <div className="picker-list">
-            {motions.length === 0 ? (
-              <div className="picker-empty">
-                <i className="fas fa-video-slash"></i>
-                <p>Нет доступных генераций для монтажа</p>
-              </div>
-            ) : (
-              motions.map((m) => (
-                <div
-                  key={m.id}
-                  className={`picker-item ${selectedMotion === m.id ? 'selected' : ''}`}
-                  onClick={() => setSelectedMotion(m.id)}
-                >
-                  <div className="picker-item-preview">
-                    {m.motion_thumbnail_url ? (
-                        <img src={m.motion_thumbnail_url} alt="motion" style={{width:'100%', height:'100%', objectFit:'cover'}}/>
-                    ) : m.motion_video_url ? (
-                      <video src={m.motion_video_url} preload="metadata" muted />
-                    ) : (
-                      <i className="fas fa-video"></i>
-                    )}
-                  </div>
-                  <div className="picker-item-info">
-                    <div className="picker-item-title">
-                      Motion #{shortId(m.id)}
-                    </div>
-                    <div className="picker-item-meta">
-                      <StatusBadge status={m.status} />
-                      <span className="picker-item-id">
-                        <i className="fas fa-fingerprint"></i> {shortId(m.id)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="picker-item-check">
-                    {selectedMotion === m.id && (
-                      <i className="fas fa-check-circle"></i>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
+        </Modal>
+      )}
 
-        {/* Step 2: Pick Track */}
-        {step === 2 && (
-          <div className="picker-list">
-            {tracks.length === 0 ? (
-              <div className="picker-empty">
-                <i className="fas fa-music"></i>
-                <p>Нет доступных треков</p>
-              </div>
-            ) : (
-              tracks.map((t) => (
-                <div
-                  key={t.id}
-                  className={`picker-item ${selectedTrack === t.id ? 'selected' : ''}`}
-                  onClick={() => setSelectedTrack(t.id)}
-                >
-                  <div className="picker-item-icon">
-                    <i className="fas fa-music"></i>
-                  </div>
-                  <div className="picker-item-info">
-                    <div className="picker-item-title">{t.name}</div>
-                    <div className="picker-item-subtitle">
-                      {t.artist || 'Неизвестный артист'}
-                    </div>
-                    <div className="picker-item-meta">
-                      {t.duration_seconds > 0 && (
-                        <span>
-                          <i className="fas fa-clock"></i>{' '}
-                          {formatDuration(t.duration_seconds)}
-                        </span>
-                      )}
-                      <span>
-                        <i className="fas fa-weight-hanging"></i>{' '}
-                        {t.size_mb.toFixed(2)} МБ
-                      </span>
-                    </div>
-                  </div>
-                  <div className="picker-item-check">
-                    {selectedTrack === t.id && (
-                      <i className="fas fa-check-circle"></i>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-
-        {/* Step 3: Confirmation */}
-        {step === 3 && (
-          <div className="picker-confirm">
-            <div className="picker-confirm-row">
-              <div className="picker-confirm-label">
-                <i className="fas fa-video"></i> Motion
-              </div>
-              <div className="picker-confirm-card">
-                {selectedMotionObj?.motion_video_url ? (
-                  <div className="picker-confirm-thumb">
-                    <video
-                      src={selectedMotionObj.motion_video_url}
-                      preload="metadata"
-                      muted
-                    />
-                  </div>
-                ) : (
-                  <div className="picker-confirm-thumb placeholder">
-                    <i className="fas fa-video"></i>
-                  </div>
-                )}
-                <div className="picker-confirm-info">
-                  <div className="picker-item-title">
-                     Motion #{shortId(selectedMotionObj?.id)}
-                  </div>
-                  <span className="picker-item-id">
-                    <i className="fas fa-fingerprint"></i>{' '}
-                    {shortId(selectedMotionObj?.id)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="picker-confirm-divider">
-              <i className="fas fa-plus"></i>
-            </div>
-
-            <div className="picker-confirm-row">
-              <div className="picker-confirm-label">
-                <i className="fas fa-music"></i> Трек
-              </div>
-              <div className="picker-confirm-card">
-                <div className="picker-confirm-thumb placeholder music">
-                  <i className="fas fa-music"></i>
-                </div>
-                <div className="picker-confirm-info">
-                  <div className="picker-item-title">
-                    {selectedTrackObj?.name}
-                  </div>
-                  <div className="picker-item-subtitle">
-                    {selectedTrackObj?.artist || 'Неизвестный артист'}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </Modal>
-
-      <VideoPlayerModal
-        isOpen={player.open}
-        onClose={() => setPlayer({ open: false, url: '', title: '' })}
-        url={player.url}
-        title={player.title}
-      />
-    </section>
+      {player.open && (
+        <VideoPlayerModal
+          isOpen={true}
+          url={player.url}
+          title={player.title}
+          onClose={() => setPlayer({ ...player, open: false })}
+        />
+      )}
+    </div>
   );
 }

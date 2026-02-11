@@ -81,15 +81,15 @@ export default function TracksPage() {
 
   const handleDrop = (e) => {
     e.preventDefault();
-    e.currentTarget.classList.remove('dragover');
+    e.currentTarget.classList.remove('border-primary'); 
     if (e.dataTransfer.files.length) {
       setFile(e.dataTransfer.files[0]);
     }
   };
 
   return (
-    <section className="section">
-      <div className="section-header">
+    <div className="page-container">
+      <div className="page-header">
         <h1>Аудио треки</h1>
         <button
           className="btn btn-primary"
@@ -109,31 +109,32 @@ export default function TracksPage() {
         />
       </div>
 
-      <div className="card-grid">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {loading ? (
-          <div className="loading">
-            <i className="fas fa-spinner fa-spin"></i> Загрузка...
+          <div className="col-span-full loading">
+            <i className="fas fa-spinner fa-spin text-4xl mb-2"></i> Загрузка...
           </div>
         ) : tracks.length === 0 ? (
-          <div className="empty-state">
+          <div className="col-span-full empty-state">
             <i className="fas fa-music"></i>
             <p>Нет треков. Загрузите первый аудио файл!</p>
           </div>
         ) : (
           tracks.map((t) => (
-            <div className="card track-card" key={t.id}>
+            <div className="card track-card group" key={t.id}>
               <div className="card-body">
                 <div className="track-info">
                   <div className="track-icon">
                     <i className="fas fa-music"></i>
                   </div>
                   <div className="track-details">
-                    <div className="card-title">{t.name}</div>
-                    <div className="track-artist">
+                    <div className="card-title" title={t.name}>{t.name}</div>
+                    <div className="track-artist" title={t.artist}>
                       {t.artist || 'Неизвестный артист'}
                     </div>
                   </div>
                 </div>
+                
                 <div className="track-stats">
                   {t.duration_seconds > 0 && (
                     <span>
@@ -149,27 +150,24 @@ export default function TracksPage() {
                     <i className="fas fa-fingerprint"></i> {shortId(t.id)}
                   </span>
                 </div>
-                {t.file_url && (
-                  <audio controls preload="none" src={t.file_url} />
-                )}
-                <div className="card-actions">
-                  {t.file_url && (
-                    <a
-                      href={t.file_url}
-                      download
-                      className="btn-icon"
-                      title="Скачать"
+
+                <div className="flex justify-end mt-auto pt-4 border-t border-border/50">
+                    <button
+                      className="btn-icon hover:border-danger hover:text-danger"
+                      onClick={() => handleDelete(t.id)}
+                      title="Удалить"
                     >
-                      <i className="fas fa-download"></i>
+                      <i className="fas fa-trash"></i>
+                    </button>
+                    <a 
+                        href={`/api/files/${t.file_path}`} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="btn-icon ml-2 hover:text-white"
+                        download
+                    >
+                        <i className="fas fa-download"></i>
                     </a>
-                  )}
-                  <button
-                    className="btn-icon"
-                    onClick={() => handleDelete(t.id)}
-                    title="Удалить"
-                  >
-                    <i className="fas fa-trash"></i>
-                  </button>
                 </div>
               </div>
             </div>
@@ -177,82 +175,75 @@ export default function TracksPage() {
         )}
       </div>
 
-      {/* Upload Track Modal */}
-      <Modal
-        isOpen={uploadModal}
-        onClose={() => setUploadModal(false)}
-        title="Загрузить аудио трек"
-        footer={
-          <>
-            <button
-              className="btn btn-secondary"
-              onClick={() => setUploadModal(false)}
+      {uploadModal && (
+        <Modal title="Загрузить трек" onClose={() => setUploadModal(false)}>
+          <div className="space-y-4">
+            <div className="form-group">
+              <label>Название</label>
+              <input
+                type="text"
+                className="input-field"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Название трека"
+              />
+            </div>
+            <div className="form-group">
+              <label>Исполнитель</label>
+              <input
+                type="text"
+                className="input-field"
+                value={artist}
+                onChange={(e) => setArtist(e.target.value)}
+                placeholder="Имя исполнителя (необязательно)"
+              />
+            </div>
+            
+            <div 
+                className={`border-2 border-dashed border-border rounded-xl p-8 text-center cursor-pointer transition-colors ${file ? 'border-primary bg-primary/5' : 'hover:border-primary/50'}`}
+                onClick={() => fileInputRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); e.currentTarget.classList.add('border-primary'); }}
+                onDragLeave={(e) => { e.preventDefault(); e.currentTarget.classList.remove('border-primary'); }}
+                onDrop={handleDrop}
             >
-              Отмена
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={handleUpload}
-              disabled={uploading}
-            >
-              {uploading ? (
-                <>
-                  <i className="fas fa-spinner fa-spin"></i> Загрузка...
-                </>
-              ) : (
-                <>
-                  <i className="fas fa-upload"></i> Загрузить
-                </>
-              )}
-            </button>
-          </>
-        }
-      >
-        <div className="form-group">
-          <label>Название трека *</label>
-          <input
-            type="text"
-            placeholder="Введите название"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </div>
-        <div className="form-group">
-          <label>Артист</label>
-          <input
-            type="text"
-            placeholder="Введите имя артиста"
-            value={artist}
-            onChange={(e) => setArtist(e.target.value)}
-          />
-        </div>
-        <div className="form-group">
-          <label>Аудио файл (MP3/WAV, до 10МБ) *</label>
-          <div
-            className="file-upload"
-            onClick={() => fileInputRef.current?.click()}
-            onDragOver={(e) => {
-              e.preventDefault();
-              e.currentTarget.classList.add('dragover');
-            }}
-            onDragLeave={(e) => e.currentTarget.classList.remove('dragover')}
-            onDrop={handleDrop}
-          >
-            <i className="fas fa-cloud-arrow-up"></i>
-            <p>
-              Перетащите файл сюда или <span className="link">выберите</span>
-            </p>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".mp3,.wav"
-              hidden
-              onChange={(e) => setFile(e.target.files[0] || null)}
-            />
-            {file && <p className="file-name">{file.name}</p>}
+                <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    hidden 
+                    accept="audio/*"
+                    onChange={(e) => setFile(e.target.files[0])}
+                />
+                
+                {file ? (
+                    <div className="text-primary font-medium">
+                        <i className="fas fa-file-audio text-2xl mb-2 block"></i>
+                        {file.name}
+                    </div>
+                ) : (
+                    <div className="text-text-muted">
+                        <i className="fas fa-cloud-upload-alt text-3xl mb-2 block"></i>
+                        <p>Нажмите или перетащите файл</p>
+                        <p className="text-xs mt-1 opacity-70">MP3, WAV, AAC до 50MB</p>
+                    </div>
+                )}
+            </div>
+
+            <div className="modal-actions">
+              <button
+                className="btn btn-primary w-full justify-center"
+                onClick={handleUpload}
+                disabled={uploading}
+              >
+                {uploading ? (
+                    <><i className="fas fa-spinner fa-spin"></i> Загрузка...</>
+                ) : (
+                    <><i className="fas fa-check"></i> Загрузить</>
+                )}
+              </button>
+            </div>
           </div>
-        </div>
-      </Modal>
-    </section>
+        </Modal>
+      )}
+    </div>
   );
 }
