@@ -25,13 +25,21 @@ async def handle_callback(
     payload: dict = Body(...),
     db: Session = Depends(deps.get_db)
 ):
+    data = payload.get("data", {})
+    task_id = data.get("taskId")
+
     # Validate basics
     if payload.get("code") != 200:
         logger.warning(f"Callback received with non-200 code: {payload}")
+        if task_id:
+            motion_task = db.query(MotionModel).filter(MotionModel.external_job_id == task_id).first()
+            if motion_task:
+                motion_task.status = JobStatus.FAILED
+                motion_task.error_log = json.dumps(payload, ensure_ascii=False)
+                db.add(motion_task)
+                db.commit()
         return JSONResponse({"status": "ignored"})
     
-    data = payload.get("data", {})
-    task_id = data.get("taskId")
     state = data.get("state")
     
     if not task_id:

@@ -26,6 +26,20 @@ export default function AvatarsPage() {
     loadAvatars();
   }, [loadAvatars]);
 
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (!selectedFile) return;
+
+    const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (!validTypes.includes(selectedFile.type)) {
+      showToast('Только JPG и PNG файлы разрешены (png, jpg, jpeg)', 'error');
+      e.target.value = ''; // Reset input
+      setFile(null);
+      return;
+    }
+    setFile(selectedFile);
+  };
+
   const handleUpload = async () => {
     if (!file) {
       showToast('Выберите файл', 'error');
@@ -109,8 +123,8 @@ export default function AvatarsPage() {
             <label>Изображение</label>
             <input
               type="file"
-              onChange={(e) => setFile(e.target.files[0])}
-              accept="image/*"
+              onChange={handleFileChange}
+              accept=".jpg,.jpeg,.png"
               className="form-control"
             />
           </div>
