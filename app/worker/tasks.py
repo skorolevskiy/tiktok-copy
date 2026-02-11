@@ -2,6 +2,7 @@ from app.core.celery_app import celery_app
 from app.db.session import SessionLocal
 from app.models.track import Track, TrackStatus
 from app.models.video import Video
+from app.models.motion_cache import MotionCache
 from app.models.edit import Edit, EditStatus
 from app.services.minio_client import minio_client
 from app.services.video import generate_thumbnail
