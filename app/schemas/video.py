@@ -11,6 +11,7 @@ class VideoResponse(BaseModel):
     original_url: str
     status: str
     file_url: Optional[str] = None
+    thumbnail_url: Optional[str] = None
 
     class Config:
         from_attributes = True

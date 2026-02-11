@@ -4,6 +4,7 @@ from app.models.track import Track, TrackStatus
 from app.models.video import Video
 from app.models.edit import Edit, EditStatus
 from app.services.minio_client import minio_client
+from app.services.video import generate_thumbnail
 from app.core.config import settings
 import uuid
 import os
@@ -85,6 +86,17 @@ def download_video_task(video_id: str):
 
                 minio_client.upload_file(settings.MINIO_BUCKET_TIKTOK, file_name, temp_path, "video/mp4")
                 video.file_path = file_name
+                
+                # Generate and upload thumbnail
+                thumb_path = generate_thumbnail(temp_path)
+                if thumb_path:
+                    thumb_name = f"thumb_{video_id}.jpg"
+                    minio_client.upload_file(settings.MINIO_BUCKET_TIKTOK, thumb_name, thumb_path, "image/jpeg")
+                    video.thumbnail_path = thumb_name
+                    try:
+                        os.remove(thumb_path)
+                    except: pass
+                
                 video.status = "downloaded"
                 db.commit()
             except Exception as e:

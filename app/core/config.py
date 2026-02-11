@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     MINIO_BUCKET_AUDIO: str = "audio-tracks"
     MINIO_BUCKET_TIKTOK: str = "tiktok-original"
     MINIO_BUCKET_PROCESSED: str = "processed-videos"
+    MINIO_BUCKET_AVATARS: str = "avatars"
+    MINIO_BUCKET_REFERENCES: str = "references"
+    MINIO_BUCKET_MOTIONS: str = "motions"
     MINIO_SECURE: bool = False
 
     def model_post_init(self, __context):
