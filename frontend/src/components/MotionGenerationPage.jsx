@@ -131,6 +131,20 @@ export default function MotionGenerationPage() {
                             <div className="card-info">ID: {shortId(item.id)}</div>
                             <StatusBadge status={item.status} />
                             <div className="card-actions">
+                                {item.motion_video_url && (
+                                    <a
+                                        href={item.motion_video_url}
+                                        className="btn-icon"
+                                        style={{ marginRight: '8px' }}
+                                        download
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={(e) => e.stopPropagation()}
+                                        title="Скачать"
+                                    >
+                                        <i className="fas fa-download"></i>
+                                    </a>
+                                )}
                                 <button className="btn-icon delete" onClick={(e) => {
                                     e.stopPropagation();
                                     handleDelete(item.id);

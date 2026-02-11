@@ -79,6 +79,17 @@ export default function AvatarsPage() {
               </div>
               <div className="card-body">
                  <div className="card-actions" style={{ justifyContent: 'flex-end' }}>
+                  <a
+                    href={avatar.image_url}
+                    download
+                    className="btn-icon"
+                    title="Скачать"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <i className="fas fa-download"></i>
+                  </a>
                   <button
                     className="btn-icon delete"
                     onClick={() => handleDelete(avatar.id)}

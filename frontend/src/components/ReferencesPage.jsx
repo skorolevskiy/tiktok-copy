@@ -128,6 +128,20 @@ export default function ReferencesPage() {
                   </a>
                 </div>
                 <div className="card-actions">
+                  {item.file_url && (
+                    <a
+                      href={item.file_url}
+                      className="btn-icon"
+                      style={{ marginRight: '8px' }}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Скачать"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <i className="fas fa-download"></i>
+                    </a>
+                  )}
                   <button
                     className="btn-icon delete"
                     onClick={(e) => {
