@@ -6,6 +6,6 @@ from app.models.base import Base
 
 class Avatar(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    image_url = Column(String, nullable=False)
+    filename = Column(String, nullable=False)
     source_type = Column(String, default="Upload")
     created_at = Column(DateTime, default=datetime.utcnow)

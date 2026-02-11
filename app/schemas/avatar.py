@@ -3,7 +3,7 @@ from uuid import UUID
 from datetime import datetime
 
 class AvatarBase(BaseModel):
-    image_url: str
+    filename: str
     source_type: str = "Upload"
 
 class AvatarCreate(AvatarBase):
@@ -11,6 +11,7 @@ class AvatarCreate(AvatarBase):
 
 class Avatar(AvatarBase):
     id: UUID
+    image_url: str
     created_at: datetime
 
     class Config:
